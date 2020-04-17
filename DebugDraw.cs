@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-namespace DebugDraw
+namespace DebugUtils
 {
     public static class DebugDraw
     {
