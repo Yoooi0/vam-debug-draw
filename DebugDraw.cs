@@ -63,7 +63,8 @@ namespace DebugUtils
 
         public static void DrawBox(Vector3 position, Vector3 extents, Color color) => DrawBox(position, Quaternion.identity, extents, color);
         public static void DrawBox(Bounds bounds, Color color) => DrawBox((bounds.min + bounds.max) / 2, (bounds.max - bounds.min) / 2, color);
-        public static void DrawBox(Bounds bounds, Vector3 position, Quaternion rotation, Color color) => DrawBox(position + rotation * (bounds.max + bounds.min) / 2, rotation, (bounds.max - bounds.min) / 2, color);
+        public static void DrawBox(Bounds bounds, Quaternion rotation, Color color) => DrawBox((bounds.min + bounds.max) / 2, rotation, (bounds.max - bounds.min) / 2, color);
+        public static void DrawLocalBox(Bounds bounds, Vector3 position, Quaternion rotation, Color color) => DrawBox(position + rotation * (bounds.max + bounds.min) / 2, rotation, (bounds.max - bounds.min) / 2, color);
 
         public static void DrawEllipse(Vector3 position, Quaternion rotation, Color color, float radiusX, float radiusZ, int segments = 20)
         {
