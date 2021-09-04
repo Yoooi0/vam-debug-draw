@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Leap.Unity.Infix;
+using System;
 using UnityEngine;
 
 namespace DebugUtils
@@ -23,7 +24,7 @@ namespace DebugUtils
         public static void DrawPoint(Vector3 position, Color color, float size = 0.003f)
         {
             var scale = Mathf.Clamp(Vector3.Distance(position, Camera.main.transform.position), 0, 5);
-            DrawCircle(position, Camera.main.transform.forward, color, size * (1 + scale), 10);
+            DrawCircle(position, Camera.main.transform.forward, Camera.main.transform.right, color, size * (1 + scale), 10);
         }
 
         public static void DrawTransform(Vector3 position, Vector3 up, Vector3 right, Vector3 forward, float size = 1)
@@ -67,9 +68,14 @@ namespace DebugUtils
         public static void DrawLocalBox(Bounds bounds, Vector3 position, Quaternion rotation, Color color) => DrawBox(position + rotation * (bounds.max + bounds.min) / 2, rotation, (bounds.max - bounds.min) / 2, color);
 
         public static void DrawEllipse(Vector3 position, Quaternion rotation, Color color, float radiusX, float radiusZ, int segments = 20)
+            => DrawEllipse(position, rotation.GetUp(), rotation.GetRight(), color, radiusX, radiusZ, segments);
+
+        public static void DrawEllipse(Vector3 position, Vector3 normal, Vector3 tangent, Color color, float radiusX, float radiusZ, int segments = 20)
         {
             if (segments <= 2)
                 return;
+
+            var binormal = Vector3.Cross(normal, tangent);
 
             for (int i = 0, j = 1; j < segments + 1; i = j++)
             {
@@ -78,19 +84,31 @@ namespace DebugUtils
                 var xj = Mathf.Sin(Mathf.Deg2Rad * j * (360f / segments)) * radiusX;
                 var zj = Mathf.Cos(Mathf.Deg2Rad * j * (360f / segments)) * radiusZ;
 
-                DrawLine(position + rotation * new Vector3(xi, 0, zi), position + rotation * new Vector3(xj, 0, zj), color);
+                DrawLine(position + tangent * xi + binormal * zi, position + tangent * xj + binormal * zj, color);
             }
         }
 
-        public static void DrawEllipse(Vector3 position, Vector3 normal, Color color, float radiusX, float radiusZ, int segments = 20) => DrawEllipse(position, Quaternion.FromToRotation(Vector3.up, normal), color, radiusX, radiusZ, segments);
-
-        public static void DrawCircle(Vector3 position, Vector3 normal, Color color, float radius, int segments = 20) => DrawEllipse(position, normal, color, radius, radius, segments);
+        public static void DrawCircle(Vector3 position, Vector3 normal, Vector3 tangent, Color color, float radius, int segments = 20) => DrawEllipse(position, normal, tangent, color, radius, radius, segments);
         public static void DrawCircle(Vector3 position, Quaternion rotation, Color color, float radius, int segments = 20) => DrawEllipse(position, rotation, color, radius, radius, segments);
 
-        public static void DrawRectangle(Vector3 position, Vector3 normal, Color color, float width, float height) => DrawEllipse(position, normal, color, width, height, 4);
-        public static void DrawRectangle(Vector3 position, Quaternion rotation, Color color, float width, float height) => DrawEllipse(position, rotation, color, width, height, 4);
+        public static void DrawRectangle(Vector3 position, Vector3 normal, Vector3 tangent, Color color, float width, float height)
+        {
+            var binormal = Vector3.Cross(normal, tangent);
 
-        public static void DrawSquare(Vector3 position, Vector3 normal, Color color, float size) => DrawEllipse(position, normal, color, size, size, 4);
-        public static void DrawSquare(Vector3 position, Quaternion rotation, Color color, float size) => DrawEllipse(position, rotation, color, size, size, 4);
+            var p0 = position - width / 2 * tangent + height / 2 * binormal;
+            var p1 = position + width / 2 * tangent + height / 2 * binormal;
+            var p2 = position + width / 2 * tangent - height / 2 * binormal;
+            var p3 = position - width / 2 * tangent - height / 2 * binormal;
+
+            DrawLine(p0, p1, color);
+            DrawLine(p1, p2, color);
+            DrawLine(p2, p3, color);
+            DrawLine(p3, p0, color);
+        }
+
+        public static void DrawRectangle(Vector3 position, Quaternion rotation, Color color, float width, float height) => DrawRectangle(position, rotation.GetUp(), rotation.GetRight(), color, width, height);
+
+        public static void DrawSquare(Vector3 position, Vector3 normal, Vector3 tangent, Color color, float size) => DrawRectangle(position, normal, tangent, color, size, size);
+        public static void DrawSquare(Vector3 position, Quaternion rotation, Color color, float size) => DrawRectangle(position, rotation, color, size, size);
     }
 }
