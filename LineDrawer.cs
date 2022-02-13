@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
+using Leap.Unity.Infix;
 
 namespace DebugUtils
 {
@@ -100,7 +101,6 @@ namespace DebugUtils
 
         public void PushEllipse(Vector3 position, Quaternion rotation, Color color, float radiusX, float radiusZ, int segments = 20)
             => PushEllipse(position, rotation.GetUp(), rotation.GetRight(), color, radiusX, radiusZ, segments);
-
 
         public void PushEllipse(Vector3 position, Vector3 normal, Vector3 tangent, Color color, float radiusX, float radiusZ, int segments = 20)
         {
