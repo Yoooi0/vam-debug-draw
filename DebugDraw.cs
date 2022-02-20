@@ -4,13 +4,27 @@ namespace DebugUtils
 {
     public static class DebugDraw
     {
-        private static readonly LineDrawer _lineDrawer = new LineDrawer();
-        private static readonly Material _material = new Material(Shader.Find("Sprites/Default"));
+        private static readonly LineDrawer _lineDrawer;
+        private static readonly Material _onTopMaterial;
+        private static readonly Material _defaultMaterial;
+
+        static DebugDraw()
+        {
+            _lineDrawer = new LineDrawer();
+
+            _defaultMaterial = new Material(Shader.Find("Sprites/Default"));
+
+            _onTopMaterial = new Material(Shader.Find("Battlehub/RTGizmos/Handles"));
+            _onTopMaterial.color = Color.white;
+            _onTopMaterial.SetFloat("_Offset", 1f);
+            _onTopMaterial.SetFloat("_MinAlpha", 1f);
+        }
 
         public static bool Enabled { get; set; }
+        public static bool DrawOnTop { get; set; } = true;
 
         public static void Clear() => _lineDrawer?.Clear();
-        public static void Draw() => _lineDrawer?.Draw(_material);
+        public static void Draw() => _lineDrawer?.Draw(DrawOnTop ? _onTopMaterial : _defaultMaterial);
 
         public static void DrawLine(Vector3 start, Vector3 stop, Color color)
         { if (Enabled) _lineDrawer.PushLine(start, stop, color); }
