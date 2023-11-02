@@ -157,9 +157,7 @@ namespace DebugUtils
             for (var i = 0; i < _vertices.Count; i++)
                 indices[i] = i;
 
-            _mesh.SetIndices(indices, MeshTopology.Lines, 0);
-            _mesh.RecalculateBounds();
-
+            _mesh.SetIndices(indices, MeshTopology.Lines, 0, calculateBounds: true);
             Graphics.DrawMesh(_mesh, Matrix4x4.identity, material, layer);
         }
 
