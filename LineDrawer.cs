@@ -149,18 +149,8 @@ namespace DebugUtils
             if (_vertices.Count == 0)
                 return;
 
-            var newVertices = EnsureMeshArrayCapacity(_mesh.vertices);
-            var newColors = EnsureMeshArrayCapacity(_mesh.colors);
-            var newUvs = EnsureMeshArrayCapacity(_mesh.uv);
-            var newNormals = EnsureMeshArrayCapacity(_mesh.normals);
-
-            _vertices.CopyTo(newVertices);
-            _colors.CopyTo(newColors);
-
-            _mesh.vertices = newVertices;
-            _mesh.colors = newColors;
-            _mesh.uv = newUvs;
-            _mesh.normals = newNormals;
+            _mesh.SetVertices(_vertices);
+            _mesh.SetColors(_colors);
 
             var indices = _mesh.GetIndices(0);
             Array.Resize(ref indices, _vertices.Count);
@@ -171,13 +161,6 @@ namespace DebugUtils
             _mesh.RecalculateBounds();
 
             Graphics.DrawMesh(_mesh, Matrix4x4.identity, material, layer);
-        }
-
-        private T[] EnsureMeshArrayCapacity<T>(T[] array)
-        {
-            var capacity = Math.Max(InitialBufferCapacity, _vertices.Capacity);
-            Array.Resize(ref array, capacity);
-            return array;
         }
 
         public void Clear()
