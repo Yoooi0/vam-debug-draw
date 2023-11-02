@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using System.Collections.Generic;
 using Leap.Unity.Infix;
 using System;
@@ -184,6 +184,12 @@ namespace DebugUtils
         {
             _vertices.Clear();
             _colors.Clear();
+        }
+
+        public void Reset()
+        {
+            _vertices.Capacity = InitialBufferCapacity;
+            _colors.Capacity = InitialBufferCapacity;
         }
     }
 }

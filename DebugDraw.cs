@@ -24,6 +24,7 @@ namespace DebugUtils
         public static bool DrawOnTop { get; set; } = true;
 
         public static void Clear() => _lineDrawer?.Clear();
+        public static void Reset() => _lineDrawer?.Reset();
         public static void Draw() => _lineDrawer?.Draw(DrawOnTop ? _onTopMaterial : _defaultMaterial);
 
         public static void DrawLine(Vector3 start, Vector3 stop, Color color)
