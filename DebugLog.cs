@@ -5,6 +5,30 @@ using UnityEngine.UI;
 
 namespace DebugUtils
 {
+
+    private void DumpComponentTree(GameObject o, int depth = 0)
+    {
+        if (depth > 10)
+            return;
+
+        var indent = "";
+        for (var i = 0; i < depth; i++)
+            indent += "    ";
+
+        var directChildren = o.gameObject.GetComponentsInChildren<Component>()
+                                         .Where(c => c.transform.parent == o.transform)
+                                         .Select(c => c.gameObject)
+                                         .Distinct()
+                                         .ToList();
+
+        SuperController.LogMessage(indent + o.ToString());
+        foreach (var c in o.GetComponents<Component>())
+            SuperController.LogMessage(indent + "    " + c.ToString());
+
+        foreach (var child in directChildren)
+            DumpComponentTree(child, depth + 1);
+    }
+
     public static class DebugLog
     {
         private static ScrollRect _scrollRect;
