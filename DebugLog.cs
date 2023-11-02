@@ -1,34 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace DebugUtils
 {
-
-    private void DumpComponentTree(GameObject o, int depth = 0)
-    {
-        if (depth > 10)
-            return;
-
-        var indent = "";
-        for (var i = 0; i < depth; i++)
-            indent += "    ";
-
-        var directChildren = o.gameObject.GetComponentsInChildren<Component>()
-                                         .Where(c => c.transform.parent == o.transform)
-                                         .Select(c => c.gameObject)
-                                         .Distinct()
-                                         .ToList();
-
-        SuperController.LogMessage(indent + o.ToString());
-        foreach (var c in o.GetComponents<Component>())
-            SuperController.LogMessage(indent + "    " + c.ToString());
-
-        foreach (var child in directChildren)
-            DumpComponentTree(child, depth + 1);
-    }
-
     public static class DebugLog
     {
         private static ScrollRect _scrollRect;
@@ -79,6 +56,29 @@ namespace DebugUtils
             if (level <= 400) return $"<color=#03a9f4>[{timeFormat}][DEBUG] {message}</color>";
             return $"<color=#ba68c8>[{timeFormat}][TRACE] {message}</color>";
         }
+
+        public static void DumpComponentTree(GameObject o, int depth = 0)
+        {
+            if (depth > 10)
+                return;
+
+            var indent = "";
+            for (var i = 0; i < depth; i++)
+                indent += "    ";
+
+            var directChildren = o.gameObject.GetComponentsInChildren<Component>()
+                                             .Where(c => c.transform.parent == o.transform)
+                                             .Select(c => c.gameObject)
+                                             .Distinct()
+                                             .ToList();
+
+            SuperController.LogMessage(indent + o.ToString());
+            foreach (var c in o.GetComponents<Component>())
+                SuperController.LogMessage(indent + "    " + c.ToString());
+
+            foreach (var child in directChildren)
+                DumpComponentTree(child, depth + 1);
+        }
     }
 
     public static class DebugLogPanel
@@ -124,7 +124,7 @@ namespace DebugUtils
 
         public static void Dispose()
         {
-            if(_panelObject != null)
+            if (_panelObject != null)
             {
                 SuperController.singleton.RemoveCanvas(_panelObject.GetComponent<Canvas>());
                 GameObject.Destroy(_panelObject);
