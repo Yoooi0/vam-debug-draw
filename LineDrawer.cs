@@ -1,12 +1,14 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections.Generic;
-using System.Linq;
 using Leap.Unity.Infix;
+using System;
 
 namespace DebugUtils
 {
     public class LineDrawer
     {
+        private const int InitialBufferCapacity = 32;
+
         private readonly Mesh _mesh;
         private readonly List<Vector3> _vertices;
         private readonly List<Color> _colors;
@@ -14,8 +16,8 @@ namespace DebugUtils
         public LineDrawer()
         {
             _mesh = new Mesh();
-            _vertices = new List<Vector3>();
-            _colors = new List<Color>();
+            _vertices = new List<Vector3>(InitialBufferCapacity);
+            _colors = new List<Color>(InitialBufferCapacity);
         }
 
         public void PushLine(Vector3 start, Vector3 stop, Color color)
@@ -147,16 +149,35 @@ namespace DebugUtils
             if (_vertices.Count == 0)
                 return;
 
-            var idx = Enumerable.Range(0, _vertices.Count);
+            var newVertices = EnsureMeshArrayCapacity(_mesh.vertices);
+            var newColors = EnsureMeshArrayCapacity(_mesh.colors);
+            var newUvs = EnsureMeshArrayCapacity(_mesh.uv);
+            var newNormals = EnsureMeshArrayCapacity(_mesh.normals);
 
-            _mesh.vertices = _vertices.ToArray();
-            _mesh.colors = _colors.ToArray();
-            _mesh.uv = idx.Select(_ => Vector2.zero).ToArray();
-            _mesh.normals = idx.Select(_ => Vector3.zero).ToArray();
-            _mesh.SetIndices(idx.ToArray(), MeshTopology.Lines, 0);
+            _vertices.CopyTo(newVertices);
+            _colors.CopyTo(newColors);
+
+            _mesh.vertices = newVertices;
+            _mesh.colors = newColors;
+            _mesh.uv = newUvs;
+            _mesh.normals = newNormals;
+
+            var indices = _mesh.GetIndices(0);
+            Array.Resize(ref indices, _vertices.Count);
+            for (var i = 0; i < _vertices.Count; i++)
+                indices[i] = i;
+
+            _mesh.SetIndices(indices, MeshTopology.Lines, 0);
             _mesh.RecalculateBounds();
 
             Graphics.DrawMesh(_mesh, Matrix4x4.identity, material, layer);
+        }
+
+        private T[] EnsureMeshArrayCapacity<T>(T[] array)
+        {
+            var capacity = Math.Max(InitialBufferCapacity, _vertices.Capacity);
+            Array.Resize(ref array, capacity);
+            return array;
         }
 
         public void Clear()
