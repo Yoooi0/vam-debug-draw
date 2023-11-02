@@ -10,6 +10,9 @@ namespace DebugUtils
         private readonly Mesh _mesh;
         private readonly List<Vector3> _vertices;
         private readonly List<Color> _colors;
+        private Vector3[] _vertexBuffer;
+        private Color[] _colorBuffer;
+        private int[] _indizes;
 
         public LineDrawer()
         {
@@ -142,19 +145,47 @@ namespace DebugUtils
         public void PushSquare(Vector3 position, Vector3 normal, Vector3 tangent, Color color, float size) => PushRectangle(position, normal, tangent, color, size, size);
         public void PushSquare(Vector3 position, Quaternion rotation, Color color, float size) => PushRectangle(position, rotation, color, size, size);
 
-        public void Draw(Material material, int layer = 0)
+        public void Update()
         {
             if (_vertices.Count == 0)
                 return;
 
-            var idx = Enumerable.Range(0, _vertices.Count);
+            if (_vertexBuffer == null || _vertexBuffer.Length != _vertices.Count)
+            {
+                _vertexBuffer = new Vector3[_vertices.Count];
+                _indizes = Enumerable.Range(0, _vertices.Count).ToArray();
+                _mesh.uv = _indizes.Select(_ => Vector2.zero).ToArray();
+                _mesh.normals = _indizes.Select(_ => Vector3.zero).ToArray();
+            }
 
-            _mesh.vertices = _vertices.ToArray();
-            _mesh.colors = _colors.ToArray();
-            _mesh.uv = idx.Select(_ => Vector2.zero).ToArray();
-            _mesh.normals = idx.Select(_ => Vector3.zero).ToArray();
-            _mesh.SetIndices(idx.ToArray(), MeshTopology.Lines, 0);
+            if (_colorBuffer == null || _colorBuffer.Length != _colors.Count)
+            {
+                _colorBuffer = new Color[_colors.Count];
+            }
+
+            _vertices.CopyTo(_vertexBuffer);
+            _colors.CopyTo(_colorBuffer);
+
+            _mesh.vertices = _vertexBuffer;
+            _mesh.colors = _colorBuffer;
             _mesh.RecalculateBounds();
+        }
+
+        public void Draw(Material material, int layer = 0)
+        {
+            Update();
+            DrawBuffer(material, layer);
+        }
+
+        public void DrawBuffer(Material material, int layer = 0)
+        {
+            if (_vertices.Count == 0)
+                return;
+
+            if (_mesh.vertices == null || _mesh.vertices.Length != _vertices.Count)
+                Update();
+
+            _mesh.SetIndices(_indizes, MeshTopology.Lines, 0);
 
             Graphics.DrawMesh(_mesh, Matrix4x4.identity, material, layer);
         }
