@@ -145,13 +145,10 @@ namespace DebugUtils
         public void PushSquare(Vector3 position, Vector3 normal, Vector3 tangent, Color color, float size) => PushRectangle(position, normal, tangent, color, size, size);
         public void PushSquare(Vector3 position, Quaternion rotation, Color color, float size) => PushRectangle(position, rotation, color, size, size);
 
-        public void UpdateMesh()
+        public void Update()
         {
-            if (_vertices.Count == 0)
-            {
-                _vertexCountOnLastUpdate = 0;
+            if (_vertices.Count == 0 && _vertexCountOnLastUpdate == 0)
                 return;
-            }
 
             _mesh.SetVertices(_vertices);
             _mesh.SetColors(_colors);
@@ -159,28 +156,27 @@ namespace DebugUtils
             if (_vertices.Count == _vertexCountOnLastUpdate)
             {
                 _mesh.RecalculateBounds();
-                return;
+            }
+            else
+            {
+                var indices = _mesh.GetIndices(0);
+                Array.Resize(ref indices, _vertices.Count);
+                for (var i = _vertexCountOnLastUpdate; i < _vertices.Count; i++)
+                    indices[i] = i;
+
+                _mesh.SetIndices(indices, MeshTopology.Lines, 0, calculateBounds: true);
             }
 
             _vertexCountOnLastUpdate = _vertices.Count;
-
-            var indices = new int[_vertexCountOnLastUpdate];
-            for (var i = 0; i < _vertexCountOnLastUpdate; i++)
-                indices[i] = i;
-
-            _mesh.SetIndices(indices, MeshTopology.Lines, 0, calculateBounds: true);
-        }
-
-        public void DrawMesh(Material material, int layer = 0)
-        {
-            if (_vertexCountOnLastUpdate > 0)
-                Graphics.DrawMesh(_mesh, Matrix4x4.identity, material, layer);
         }
 
         public void Draw(Material material, int layer = 0)
+            => Graphics.DrawMesh(_mesh, Matrix4x4.identity, material, layer);
+
+        public void UpdateAndDraw(Material material, int layer = 0)
         {
-            UpdateMesh();
-            DrawMesh(material, layer);
+            Update();
+            Draw(material, layer);
         }
 
         public void Clear()
