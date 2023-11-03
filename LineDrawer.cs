@@ -12,6 +12,7 @@ namespace DebugUtils
         private readonly Mesh _mesh;
         private readonly List<Vector3> _vertices;
         private readonly List<Color> _colors;
+        private int _vertexCountOnLastUpdate;
 
         public LineDrawer()
         {
@@ -144,21 +145,42 @@ namespace DebugUtils
         public void PushSquare(Vector3 position, Vector3 normal, Vector3 tangent, Color color, float size) => PushRectangle(position, normal, tangent, color, size, size);
         public void PushSquare(Vector3 position, Quaternion rotation, Color color, float size) => PushRectangle(position, rotation, color, size, size);
 
-        public void Draw(Material material, int layer = 0)
+        public void UpdateMesh()
         {
             if (_vertices.Count == 0)
+            {
+                _vertexCountOnLastUpdate = 0;
                 return;
+            }
 
             _mesh.SetVertices(_vertices);
             _mesh.SetColors(_colors);
 
-            var indices = _mesh.GetIndices(0);
-            Array.Resize(ref indices, _vertices.Count);
-            for (var i = 0; i < _vertices.Count; i++)
+            if (_vertices.Count == _vertexCountOnLastUpdate)
+            {
+                _mesh.RecalculateBounds();
+                return;
+            }
+
+            _vertexCountOnLastUpdate = _vertices.Count;
+
+            var indices = new int[_vertexCountOnLastUpdate];
+            for (var i = 0; i < _vertexCountOnLastUpdate; i++)
                 indices[i] = i;
 
             _mesh.SetIndices(indices, MeshTopology.Lines, 0, calculateBounds: true);
-            Graphics.DrawMesh(_mesh, Matrix4x4.identity, material, layer);
+        }
+
+        public void DrawMesh(Material material, int layer = 0)
+        {
+            if (_vertexCountOnLastUpdate > 0)
+                Graphics.DrawMesh(_mesh, Matrix4x4.identity, material, layer);
+        }
+
+        public void Draw(Material material, int layer = 0)
+        {
+            UpdateMesh();
+            DrawMesh(material, layer);
         }
 
         public void Clear()
