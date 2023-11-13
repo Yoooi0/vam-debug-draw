@@ -25,7 +25,7 @@ namespace DebugUtils
 
         public static void Clear() => _lineDrawer?.Clear();
         public static void Reset() => _lineDrawer?.Reset();
-        public static void Draw() => _lineDrawer?.Draw(DrawOnTop ? _onTopMaterial : _defaultMaterial);
+        public static void Draw() => _lineDrawer?.UpdateAndDraw(DrawOnTop ? _onTopMaterial : _defaultMaterial);
 
         public static void DrawLine(Vector3 start, Vector3 stop, Color color)
         { if (Enabled) _lineDrawer.PushLine(start, stop, color); }
