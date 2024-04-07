@@ -187,6 +187,7 @@ namespace DebugUtils
 
         public void Reset()
         {
+            Clear();
             _vertices.Capacity = InitialBufferCapacity;
             _colors.Capacity = InitialBufferCapacity;
         }
